@@ -5,5 +5,14 @@
   "license": "MIT",
   "dependencies": {
     "express": "^5.2.1"
-  }
+  },
+  "bin": {
+    "simple-rdbms": "./bin/repl.js"
+  },
+  "scripts": {
+    "repl": "node bin/repl.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["database", "rdbms", "sql"],
+  "author": "Faith Nkarichia"
 }
