@@ -23,3 +23,4 @@ npm install or yarn
 chmod +x bin/repl.js
 
 yarn repl # to start the repl
+yarn server # to start web server
