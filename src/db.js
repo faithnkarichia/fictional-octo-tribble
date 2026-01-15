@@ -21,6 +21,12 @@ class SimpleRDBMS {
           return this._insert(sql);
         case "SELECT":
           return this._select(sql);
+        case "UPDATE":
+          return this._update(sql);
+        case "DELETE":
+          return this._delete(sql);
+        case "DROP":
+          return this._dropTable(sql);
         case "SHOW":
           return this._showTables();
         case "DESCRIBE":
@@ -223,6 +229,72 @@ class SimpleRDBMS {
       return Number(str);
     }
     return str;
+  }
+
+  _update(sql) {
+    const match = sql.match(/UPDATE (\w+) SET (.+)(?: WHERE (.+))?/i);
+    if (!match) throw new Error("Invalid UPDATE syntax");
+
+    const tableName = match[1];
+    const setClause = match[2];
+    const whereClause = match[3];
+
+    const table = this.tables[tableName];
+    if (!table) throw new Error(`Table ${tableName} doesn't exist`);
+
+    const updates = {};
+    setClause.split(",").forEach((pair) => {
+      const [col, val] = pair.split("=").map((s) => s.trim());
+      updates[col] = this._parseValue(val);
+    });
+
+    let affected = 0;
+    table.rows.forEach((row) => {
+      if (!whereClause || this._evaluateWhere(row, whereClause)) {
+        Object.assign(row, updates);
+        affected++;
+      }
+    });
+
+    return { message: `${affected} row(s) updated` };
+  }
+
+  _delete(sql) {
+    const match = sql.match(/DELETE FROM (\w+)(?: WHERE (.+))?/i);
+    if (!match) throw new Error("Invalid DELETE syntax");
+
+    const tableName = match[1];
+    const whereClause = match[2];
+
+    const table = this.tables[tableName];
+    if (!table) throw new Error(`Table ${tableName} doesn't exist`);
+
+    const initialCount = table.rows.length;
+
+    if (whereClause) {
+      table.rows = table.rows.filter(
+        (row) => !this._evaluateWhere(row, whereClause)
+      );
+    } else {
+      table.rows = [];
+    }
+
+    const deleted = initialCount - table.rows.length;
+    return { message: `${deleted} row(s) deleted` };
+  }
+
+  _dropTable(sql) {
+    const match = sql.match(/DROP TABLE (\w+)/i);
+    if (!match) throw new Error("Invalid DROP TABLE syntax");
+
+    const tableName = match[1];
+
+    if (!this.tables[tableName]) {
+      throw new Error(`Table ${tableName} doesn't exist`);
+    }
+
+    delete this.tables[tableName];
+    return { message: `Table ${tableName} dropped` };
   }
 
   _evaluateWhere(row, condition) {
