@@ -11,8 +11,12 @@
   },
   "scripts": {
     "repl": "node bin/repl.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "server": "node bin/web-server.js"
   },
-  "keywords": ["database", "rdbms", "sql"],
+  "keywords": [
+    "database",
+    "rdbms",
+    "sql"
+  ],
   "author": "Faith Nkarichia"
 }
